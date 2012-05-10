@@ -2,12 +2,12 @@ Source: ros-fuerte-object-recognition-tod
 Section: misc
 Priority: extra
 Maintainer: Vincent Rabaud <vrabaud@willowgarage.com>
-Build-Depends: debhelper (>= 7.0.50~), ros-fuerte-catkin,ros-fuerte-object-recognition-core,ros-fuerte-ecto
+Build-Depends: debhelper (>= 7.0.50~), ros-fuerte-ecto-opencv,ros-fuerte-catkin,ros-fuerte-ecto-pcl,ros-fuerte-object-recognition-core,ros-fuerte-ecto
 Homepage: http://ecto.willowgarage.com
 Standards-Version: 3.9.2
 
 Package: ros-fuerte-object-recognition-tod
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ros-fuerte-catkin,ros-fuerte-object-recognition-core,ros-fuerte-ecto
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-fuerte-ecto-opencv,ros-fuerte-catkin,ros-fuerte-ecto-pcl,ros-fuerte-object-recognition-core,ros-fuerte-ecto
 Description: Textured Object Recognition a standard bag of features approach
 
