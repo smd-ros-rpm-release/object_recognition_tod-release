@@ -1,13 +1,13 @@
-Source: ros-groovy-object-recognition-tod
+Source: ros-fuerte-object-recognition-tod
 Section: misc
 Priority: extra
 Maintainer: Vincent Rabaud <vrabaud@willowgarage.com>
-Build-Depends: debhelper (>= 7.0.50~), ros-groovy-ecto,ros-groovy-ecto-opencv,ros-groovy-catkin,ros-groovy-object-recognition-core
+Build-Depends: debhelper (>= 7.0.50~), ros-fuerte-ecto-opencv,ros-fuerte-catkin,ros-fuerte-object-recognition-core,ros-fuerte-ecto
 Homepage: http://ecto.willowgarage.com
 Standards-Version: 3.9.2
 
-Package: ros-groovy-object-recognition-tod
+Package: ros-fuerte-object-recognition-tod
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ros-groovy-ecto,ros-groovy-ecto-opencv,ros-groovy-object-recognition-core
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-fuerte-ecto-opencv,ros-fuerte-object-recognition-core,ros-fuerte-ecto
 Description: Textured Object Recognition a standard bag of features approach
 
