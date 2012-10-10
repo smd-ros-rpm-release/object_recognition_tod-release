@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_tod)
 find_package(catkin REQUIRED)
+if (${catkin_VERSION} VERSION_GREATER "0.5.28")
+catkin_package()
+else()
 catkin_stack()
-catkin_project(object_recognition_tod
-               DEPENDS Boost Eigen OpenCV object_recognition_core
-)
+catkin_project(object_recognition_tod)
+endif()
 
 #install targets for all things python
 catkin_python_setup()
@@ -24,7 +26,9 @@ find_package(OpenCV REQUIRED)
 
 rosbuild_lite_init()
 
-include_directories(SYSTEM ${ecto_opencv_INCLUDE_DIRS})
+include_directories(SYSTEM ${ecto_opencv_INCLUDE_DIRS}
+                           ${EIGEN_INCLUDE_DIRS}
+)
 
 add_subdirectory(src)
 option(BUILD_TEST "Build tests" ON)
@@ -38,11 +42,17 @@ if (ROS_ELECTRIC_FOUND)
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/feature_viewer
         DESTINATION bin
 )
-else()
+endif()
+if (ROS_FUERTE_FOUND)
 # install the applications
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/feature_viewer
         DESTINATION share/${PROJECT_NAME}/bin
 )
 endif()
 
-
+if (ROS_GROOVY_OR_ABOVE_FOUND)
+# install the applications
+install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/feature_viewer
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+endif()
