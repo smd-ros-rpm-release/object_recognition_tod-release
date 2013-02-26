@@ -6,7 +6,6 @@ Module defining the TOD trainer to train the TOD models
 from ecto import BlackBoxCellInfo as CellInfo, BlackBoxForward as Forward
 from ecto_opencv import calib, features2d, highgui
 from ecto_opencv.features2d import FeatureDescriptor
-from object_recognition_core.db.cells import ModelWriter
 from object_recognition_core.pipelines.training import TrainerBase, ObservationDealer
 from object_recognition_tod import ecto_training
 import ecto
@@ -17,7 +16,7 @@ from ecto import BlackBoxCellInfo as CellInfo, BlackBoxForward as Forward
 class TodTrainer(ecto.BlackBox, TrainerBase):
     def __init__(self, *args, **kwargs):
         ecto.BlackBox.__init__(self, *args, **kwargs)
-        TrainerBase.__init__(self)
+        TrainerBase.__init__(self, *args, **kwargs)
 
     @classmethod
     def declare_cells(cls, _p):
@@ -79,8 +78,7 @@ class TodIncrementalModelBuilder(ecto.BlackBox):
     def declare_direct_params(p):
         p.declare('visualize', 'If true, displays images at runtime', False)
 
-    @staticmethod
-    def declare_forwards(p):
+    def declare_forwards(self, p):
         p = {'feature_descriptor': [Forward('json_feature_params'), Forward('json_descriptor_params')]}
         i = {'source': 'all'}
         o = {'model_stacker': 'all'}
