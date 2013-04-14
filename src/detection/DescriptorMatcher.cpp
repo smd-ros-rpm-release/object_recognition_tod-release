@@ -47,7 +47,6 @@
 
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/common/types.h>
-#include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/ModelReader.h>
 #include <object_recognition_core/db/opencv.h>
 #include <opencv_candidate/lsh.h>
@@ -133,7 +132,7 @@ namespace tod
     static void
     declare_params(ecto::tendrils& p)
     {
-      object_recognition_core::db::bases::declare_params_impl(p);
+      object_recognition_core::db::bases::declare_params_impl(p, "TOD");
       // We can do radius and/or ratio test
       std::stringstream ss;
       ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
