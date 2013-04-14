@@ -47,7 +47,6 @@
 
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/common/types.h>
-#include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/ModelReader.h>
 #include <object_recognition_core/db/opencv.h>
 #include <opencv_candidate/lsh.h>
@@ -57,10 +56,10 @@ using object_recognition_core::db::ObjectId;
 
 namespace tod
 {
-  struct DescriptorMatcher: public object_recognition_core::db::bases::ModelReaderImpl
+  struct DescriptorMatcher: public object_recognition_core::db::bases::ModelReaderBase
   {
     void
-    ParameterCallback(const Documents & db_documents)
+    parameter_callback(const Documents & db_documents)
     {
       descriptors_db_.resize(db_documents.size());
       features3d_db_.resize(db_documents.size());
@@ -71,7 +70,7 @@ namespace tod
       unsigned int index = 0;
       BOOST_FOREACH(const object_recognition_core::db::Document & document, db_documents)
       {
-        ObjectId object_id = document.get_value<std::string>("object_id");
+        ObjectId object_id = document.get_field<std::string>("object_id");
         std::cout << "Loading model for object id: " << object_id << std::endl;
         cv::Mat descriptors;
         document.get_attachment<cv::Mat>("descriptors", descriptors);
@@ -133,6 +132,7 @@ namespace tod
     static void
     declare_params(ecto::tendrils& p)
     {
+      object_recognition_core::db::bases::declare_params_impl(p, "TOD");
       // We can do radius and/or ratio test
       std::stringstream ss;
       ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
@@ -155,6 +155,7 @@ namespace tod
     void
     configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
+      configure_impl();
       // get some parameters
       {
         or_json::mObject search_param_tree;
@@ -256,12 +257,8 @@ BOOST_FOREACH      (const cv::DMatch & match, matches[match_index])
     std::vector<cv::Mat> features3d_db_;
     /** For each object id, the maximum distance between the known descriptors (span) */
     std::map<ObjectId, float> spans_;
-
-    /** The matching object ids */
-    std::vector<ObjectId> object_ids_;
   };
-
 }
 
-ECTO_CELL(ecto_detection, object_recognition_core::db::bases::ModelReaderBase<tod::DescriptorMatcher>,
-    "DescriptorMatcher", "Given descriptors, find matches, relating to objects.");
+ECTO_CELL(ecto_detection, tod::DescriptorMatcher, "DescriptorMatcher",
+          "Given descriptors, find matches, relating to objects.");
