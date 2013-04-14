@@ -12,29 +12,21 @@ from object_recognition_core.pipelines.detection import DetectorBase
 from object_recognition_tod import ecto_detection
 import ecto
 
-try:
-    import ecto_ros.ecto_ros_main
-    import ecto_ros.ecto_sensor_msgs as ecto_sensor_msgs
-    ECTO_ROS_FOUND = True
-except ImportError:
-    ECTO_ROS_FOUND = False
-
 class TodDetector(ecto.BlackBox, DetectorBase):
     def __init__(self, *args, **kwargs):
         ecto.BlackBox.__init__(self, *args, **kwargs)
         DetectorBase.__init__(self)
 
-    def declare_cells(self, p):
+    @staticmethod
+    def declare_cells(p):
         guess_params = {}
         guess_params['visualize'] = p.visualize
-        guess_params['db'] = p.db
+        guess_params['db'] = p.json_db
 
-        cells = {'depth_map': CellInfo(RescaledRegisteredDepth),
+        cells = {'depth_map': RescaledRegisteredDepth(),
                  'feature_descriptor': CellInfo(FeatureDescriptor),
                  'guess_generator': CellInfo(ecto_detection.GuessGenerator, guess_params),
                  'passthrough': CellInfo(ecto.PassthroughN, {'items':{'image':'An image', 'K':'The camera matrix'}})}
-        if ECTO_ROS_FOUND:
-            cells['message_cvt'] = CellInfo(ecto_ros.ecto_ros_main.Mat2Image)
 
         return cells
 
@@ -45,8 +37,6 @@ class TodDetector(ecto.BlackBox, DetectorBase):
              'guess_generator': [Forward('n_ransac_iterations'),
                                  Forward('min_inliers'),
                                  Forward('sensor_error')]}
-        if ECTO_ROS_FOUND:
-            p['message_cvt'] = [Forward('frame_id', 'rgb_frame_id')]
         i = {'passthrough': [Forward('image'), Forward('K')],
              'feature_descriptor': [Forward('mask')],
              'depth_map': [Forward('depth')]}
@@ -58,28 +48,28 @@ class TodDetector(ecto.BlackBox, DetectorBase):
 
     @classmethod
     def declare_direct_params(self, p):
-        p.declare('db', 'The DB to get data from as a JSON string', '{}')
+        p.declare('json_db', 'The DB to get data from as a JSON string', '{}')
         p.declare('search', 'The search parameters as a JSON string', '{}')
-        p.declare('object_ids', 'The ids of the objects to find as a JSON list or the keyword "all".', 'all')
+        p.declare('json_object_ids', 'The ids of the objects to find as a JSON list or the keyword "all".', 'all')
         p.declare('visualize', 'If true, some windows pop up to see the progress', False)
 
     def configure(self, p, _i, _o):
         self.descriptor_matcher = ecto_detection.DescriptorMatcher("Matcher",
                             search_json_params=p['search'],
-                            json_object_ids=p['object_ids'])
+                            json_db=p['json_db'],
+                            json_object_ids=p['json_object_ids'])
 
-        self._depth_map = RescaledRegisteredDepth()
         self._points3d = DepthTo3d()
 
     def connections(self, p):
         # Rescale the depth image and convert to 3d
-        graph = [ self.passthrough['image'] >> self._depth_map['image'],
-                  self._depth_map['depth'] >> self._points3d['depth'],
+        graph = [ self.passthrough['image'] >> self.depth_map['image'],
+                  self.depth_map['depth'] >> self._points3d['depth'],
                   self.passthrough['K'] >> self._points3d['K'],
                   self._points3d['points3d'] >> self.guess_generator['points3d'] ]
         # make sure the inputs reach the right cells
         if 'depth' in self.feature_descriptor.inputs.keys():
-            graph += [ self._depth_map['depth'] >> self.feature_descriptor['depth']]
+            graph += [ self.depth_map['depth'] >> self.feature_descriptor['depth']]
 
         graph += [ self.passthrough['image'] >> self.feature_descriptor['image'],
                    self.passthrough['image'] >> self.guess_generator['image'] ]
@@ -93,7 +83,7 @@ class TodDetector(ecto.BlackBox, DetectorBase):
 
         cvt_color = imgproc.cvtColor(flag=imgproc.RGB2GRAY)
 
-        if p.visualize or ECTO_ROS_FOUND:
+        if p.visualize:
             draw_keypoints = features2d.DrawKeypoints()
             graph += [ self.passthrough['image'] >> cvt_color[:],
                            cvt_color[:] >> draw_keypoints['image'],
@@ -116,11 +106,5 @@ class TodDetector(ecto.BlackBox, DetectorBase):
             graph += [ self.passthrough['image', 'K'] >> pose_drawer['image', 'K'],
                        self.guess_generator['Rs', 'Ts'] >> pose_drawer['Rs', 'Ts'],
                        pose_drawer['output'] >> pose_view['image'] ]
-
-        if ECTO_ROS_FOUND:
-            ImagePub = ecto_sensor_msgs.Publisher_Image
-            pub_features = ImagePub("Features Pub", topic_name='features')
-            graph += [ draw_keypoints['image'] >> self.message_cvt[:],
-                       self.message_cvt[:] >> pub_features[:] ]
 
         return graph
