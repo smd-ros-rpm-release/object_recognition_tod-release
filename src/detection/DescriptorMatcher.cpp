@@ -47,7 +47,6 @@
 
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/common/types.h>
-#include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/ModelReader.h>
 #include <object_recognition_core/db/opencv.h>
 #include <opencv_candidate/lsh.h>
@@ -71,7 +70,7 @@ namespace tod
       unsigned int index = 0;
       BOOST_FOREACH(const object_recognition_core::db::Document & document, db_documents)
       {
-        ObjectId object_id = document.get_value<std::string>("object_id");
+        ObjectId object_id = document.get_field<std::string>("object_id");
         std::cout << "Loading model for object id: " << object_id << std::endl;
         cv::Mat descriptors;
         document.get_attachment<cv::Mat>("descriptors", descriptors);
@@ -133,7 +132,7 @@ namespace tod
     static void
     declare_params(ecto::tendrils& p)
     {
-      object_recognition_core::db::bases::declare_params_impl(p);
+      object_recognition_core::db::bases::declare_params_impl(p, "TOD");
       // We can do radius and/or ratio test
       std::stringstream ss;
       ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
