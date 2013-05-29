@@ -1,10 +1,10 @@
 <package>
   <name>object_recognition_tod</name>
-  <version>0.4.15</version>
+  <version>0.4.16</version>
   <description>Textured Object Recognition a standard bag of features approach</description>
-  <author email="vrabaud@willowgarage.com">Vincent Rabaud</author>
+  <author email="vincent.rabaud@gmail.com">Vincent Rabaud</author>
   <author email="erublee@willowgarage.com">Ethan Rublee</author>
-  <maintainer email="vrabaud@willowgarage.com">Vincent Rabaud</maintainer>
+  <maintainer email="vincent.rabaud@gmail.com">Vincent Rabaud</maintainer>
   <license>BSD</license>
 
   <url>http://ecto.willowgarage.com</url>
